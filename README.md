@@ -42,7 +42,7 @@ a solution to this problem, then
 
     $ { cat test_problem.in && cat test_solution.out; } | ./plottsp
 
-could result in something like
+could result in something like (after punching `Right` a few times):
 
 ![screenshot][plottsp]
 
