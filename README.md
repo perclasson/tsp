@@ -46,4 +46,4 @@ could result in something like
 
 ![screenshot][plottsp]
 
-[plottsp]: https://github.com/estan/plottsp/plottsp.png "Example view from plottsp"
+[plottsp]: https://raw.github.com/estan/plottsp/master/plottsp.png "Example view from plottsp"
