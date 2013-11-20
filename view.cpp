@@ -79,34 +79,20 @@ void View::wheelEvent(QWheelEvent *event) {
 }
 
 void View::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Left) {
+    if (event->key() == Qt::Key_Right) {
         int steps = 1;
         if (event->modifiers() == Qt::ControlModifier)
             steps = 10;
         if (event->modifiers() == Qt::ShiftModifier)
             steps = 100;
-        for (int i = 0; i < steps; ++i) {
-            if (m_currentLeg > 0) {
-                m_legs[m_currentLeg]->setVisible(false);
-                m_legs[m_currentLeg]->setPen(m_legPen);
-                --m_currentLeg;
-                m_legs[m_currentLeg]->setPen(m_currentLegPen);
-            }
-        }
-    } else if (event->key() == Qt::Key_Right) {
+        moveForward(steps);
+    } else if (event->key() == Qt::Key_Left) {
         int steps = 1;
         if (event->modifiers() == Qt::ControlModifier)
             steps = 10;
         if (event->modifiers() == Qt::ShiftModifier)
             steps = 100;
-        for (int i = 0; i < steps; ++i) {
-            if (m_currentLeg < m_legs.size() - 1) {
-                m_legs[m_currentLeg]->setPen(m_legPen);
-                ++m_currentLeg;
-                m_legs[m_currentLeg]->setVisible(true);
-                m_legs[m_currentLeg]->setPen(m_currentLegPen);
-            }
-        }
+        moveBackward(steps);
     }
 }
 
@@ -129,3 +115,26 @@ void View::drawForeground(QPainter *painter, const QRectF& rect) {
         }
     }
 }
+
+void View::moveForward(int steps) {
+    for (int i = 0; i < steps; ++i) {
+        if (m_currentLeg < m_legs.size() - 1) {
+            m_legs[m_currentLeg]->setPen(m_legPen);
+            ++m_currentLeg;
+            m_legs[m_currentLeg]->setVisible(true);
+            m_legs[m_currentLeg]->setPen(m_currentLegPen);
+        }
+    }
+}
+
+void View::moveBackward(int steps) {
+    for (int i = 0; i < steps; ++i) {
+        if (m_currentLeg > 0) {
+            m_legs[m_currentLeg]->setVisible(false);
+            m_legs[m_currentLeg]->setPen(m_legPen);
+            --m_currentLeg;
+            m_legs[m_currentLeg]->setPen(m_currentLegPen);
+        }
+    }
+}
+

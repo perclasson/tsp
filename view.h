@@ -22,6 +22,10 @@ protected:
     void drawForeground(QPainter *painter, const QRectF& rect);
 
 private:
+    // Move forward/backward in the display of the solution.
+    void moveForward(int steps);
+    void moveBackward(int steps);
+
     QVector<QPointF> m_points;           // Points in the problem.
     QList<QGraphicsLineItem *> m_legs;   // Legs in the solution.
 
