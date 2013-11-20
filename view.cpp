@@ -33,6 +33,8 @@ View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidg
     float minY = std::numeric_limits<float>::max();
     float maxX = std::numeric_limits<float>::lowest();
     float maxY = std::numeric_limits<float>::lowest();
+    double sumX = 0;
+    double sumY = 0;
     for (int i = 0; i < numPoints; ++i) {
         float x, y;
         in >> x >> y;
@@ -42,8 +44,12 @@ View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidg
         minY = qMin(minY, y);
         maxX = qMax(maxX, x);
         maxY = qMax(maxY, y);
+        sumX += x;
+        sumY += y;
     }
-    setSceneRect(minX - 10, minY - 10, maxX - minX + 10, maxY - minY + 10);
+
+    const float margin = qAbs(maxX - minX) / 30;
+    setSceneRect(minX - margin, minY - margin, maxX - minX + margin, maxY - minY + margin);
 
     // Read solution, if any.
     if (edgeFormat == Sequence) {
@@ -52,7 +58,8 @@ View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidg
         readPointPairs(in);
     }
 
-    // Fit the entire scene in view.
+    // Center view on mean coordinate and zoom to fit entire scene.
+    centerOn(QPointF(sumX / numPoints, sumY / numPoints));
     fitInView(sceneRect(), Qt::KeepAspectRatio);
 }
 
