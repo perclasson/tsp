@@ -19,9 +19,18 @@ to build the tool.
 
 Documentation
 -------------
-The program reads a problem, optionally followed by a solution,
-in the same format(s) as described in `oldkattis:tsp` and presents
-an interactive view.
+The program reads a problem in the same format as described in
+`oldkattis:tsp` from standard input, optionally followed by a
+sequence of points specifying a solution (TSP tour), and presents
+an interactive view. If `-p` is given, edges are specified as
+point pairs instead (useful if you want to plot arbitrary
+disconnected edges instead of a path).
+
+### General Usage
+    Usage: plottsp [ -h | -p ]
+       -h     Show help message
+       -p     Expect edges as point pairs (default is sequence)
+    Input is read from standard input
 
 ### Available Controls
     Mouse Click+Drag     - Pan the view

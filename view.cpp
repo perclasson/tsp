@@ -11,7 +11,7 @@
 class QGraphicsScene;
 
 // Construct a view showing problem/solution from the given input stream.
-View::View(std::istream &in, QGraphicsScene *scene, QWidget *parent) :
+View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidget *parent) :
     QGraphicsView(scene, parent),
     m_legPen(Qt::black, 0),
     m_currentLegPen(QColor(Qt::green).darker(), 0),
@@ -46,28 +46,14 @@ View::View(std::istream &in, QGraphicsScene *scene, QWidget *parent) :
     setSceneRect(minX - 10, minY - 10, maxX - minX + 10, maxY - minY + 10);
 
     // Read solution, if any.
-    int firstIndex, startIndex, endIndex;
-    endIndex = -1;
-    in >> firstIndex;
-    if (!in.eof()) {
-        startIndex = firstIndex;
-        while (endIndex != firstIndex) {
-            if (in.eof())
-                endIndex = firstIndex;
-            else
-                in >> endIndex;
-            QPointF start = m_points[startIndex];
-            QPointF end = m_points[endIndex];
-            QGraphicsLineItem *leg = scene->addLine(QLineF(start, end), m_legPen);
-            leg->setVisible(false);
-            m_legs.append(leg);
-            m_solutionLength += qRound(leg->line().length());
-            startIndex = endIndex;
-        }
-        m_legs[m_currentLeg]->setPen(m_currentLegPen);
-        m_legs[m_currentLeg]->setVisible(true);
-        fitInView(m_legs[m_currentLeg], Qt::KeepAspectRatio);
+    if (edgeFormat == Sequence) {
+        readPointSequence(in);
+    } else {
+        readPointPairs(in);
     }
+
+    // Fit the entire scene in view.
+    fitInView(sceneRect(), Qt::KeepAspectRatio);
 }
 
 void View::wheelEvent(QWheelEvent *event) {
@@ -115,7 +101,6 @@ void View::drawForeground(QPainter *painter, const QRectF& rect) {
         }
     }
 
-
     // Draw solution length HUD text.
     painter->setFont(hudFont);
     painter->setPen(Qt::gray);
@@ -156,3 +141,45 @@ void View::moveBackward(int steps) {
     }
 }
 
+void View::readPointSequence(std::istream& in) {
+    int firstIndex, startIndex, endIndex;
+    endIndex = -1;
+    in >> firstIndex;
+    if (!in.eof()) {
+        startIndex = firstIndex;
+        while (endIndex != firstIndex) {
+            if (in.eof())
+                endIndex = firstIndex;
+            else
+                in >> endIndex;
+            QPointF start = m_points[startIndex];
+            QPointF end = m_points[endIndex];
+            QGraphicsLineItem *leg = scene()->addLine(QLineF(start, end), m_legPen);
+            leg->setVisible(false);
+            m_legs.append(leg);
+            m_solutionLength += qRound(leg->line().length());
+            startIndex = endIndex;
+        }
+        m_legs[m_currentLeg]->setPen(m_currentLegPen);
+        m_legs[m_currentLeg]->setVisible(true);
+    }
+}
+
+void View::readPointPairs(std::istream& in) {
+    while (!in.eof()) {
+        int startIndex, endIndex;
+        in >> startIndex >> endIndex;
+        if (in.eof())
+            break; // Hack: To avoid last edge being added twice.
+        QPointF start = m_points[startIndex];
+        QPointF end = m_points[endIndex];
+        QGraphicsLineItem *leg = scene()->addLine(QLineF(start, end), m_legPen);
+        leg->setVisible(false);
+        m_legs.append(leg);
+        m_solutionLength += qRound(leg->line().length());
+    }
+    if (!m_legs.isEmpty()) {
+        m_legs[m_currentLeg]->setPen(m_currentLegPen);
+        m_legs[m_currentLeg]->setVisible(true);
+    }
+}

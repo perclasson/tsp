@@ -14,7 +14,12 @@ class View : public QGraphicsView
     Q_OBJECT
 
 public:
-    explicit View(std::istream& in, QGraphicsScene *scene, QWidget *parent = 0);
+    enum EdgeFormat {
+        Pairs,      // Edges are specified as pairs of points.
+        Sequence    // Edges are specified as sequence of points (oldkattis:tsp format).
+    };
+
+    explicit View(std::istream& in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidget *parent = 0);
 
 protected:
     void wheelEvent(QWheelEvent *event);
@@ -22,6 +27,10 @@ protected:
     void drawForeground(QPainter *painter, const QRectF& rect);
 
 private:
+    // Reads edges following the problem.
+    void readPointSequence(std::istream& in);
+    void readPointPairs(std::istream& in);
+
     // Move forward/backward in the display of the solution.
     void moveForward(int steps);
     void moveBackward(int steps);
