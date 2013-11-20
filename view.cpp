@@ -115,18 +115,23 @@ void View::drawForeground(QPainter *painter, const QRectF& rect) {
         }
     }
 
-    // Draw HUD.
-    const int legLength = qRound(m_legs[m_currentLeg]->line().length());
 
-    const QString legHud = QString("Leg length: %1").arg(legLength);
-    const QString solutionHud = QString("Solution length: %1").arg(m_solutionLength);
-
-    const QPointF legHudPos = rect.bottomLeft() + QPointF(10/transform().m11(), -30/transform().m22());
-    const QPointF solutionHudPos = rect.bottomLeft() + QPointF(10/transform().m11(), -15/transform().m22());
+    // Draw solution length HUD text.
     painter->setFont(hudFont);
     painter->setPen(Qt::gray);
-    painter->drawText(mapFromScene(legHudPos), legHud);
+    const QString solutionHud = QString("Solution length: %1").arg(m_solutionLength);
+    const QPointF solutionHudPos = rect.bottomLeft() +
+        QPointF(10/transform().m11(), -15/transform().m22());
     painter->drawText(mapFromScene(solutionHudPos), solutionHud);
+
+    if (!m_legs.isEmpty()) {
+        // Draw leg length HUD text.
+        const int legLength = qRound(m_legs[m_currentLeg]->line().length());
+        const QString legHud = QString("Leg length: %1").arg(legLength);
+        const QPointF legHudPos = rect.bottomLeft() +
+            QPointF(10/transform().m11(), -30/transform().m22());
+        painter->drawText(mapFromScene(legHudPos), legHud);
+    }
 }
 
 void View::moveForward(int steps) {

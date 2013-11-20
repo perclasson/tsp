@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = plottsp
 INCLUDEPATH += .
-QMAKE_CXXFLAGS += -Wall -pedantic -std=gnu++0x
+QMAKE_CXXFLAGS += -g -Wall -pedantic -std=gnu++0x
 
 # For Qt 5.x we need the widgets module.
 greaterThan(QT_MAJOR_VERSION, 4) {
