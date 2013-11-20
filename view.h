@@ -32,6 +32,9 @@ private:
     QPen m_legPen;             // Pen used for legs.
     QPen m_currentLegPen;      // Pen used for current leg.
     int m_currentLeg;          // Index of current leg.
+
+    QFont hudFont;         // Font for the HUD.
+    int m_solutionLength;  // Total length of solution.
 };
 
 #endif // VIEW_H

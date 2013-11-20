@@ -15,7 +15,9 @@ View::View(std::istream &in, QGraphicsScene *scene, QWidget *parent) :
     QGraphicsView(scene, parent),
     m_legPen(Qt::black, 0),
     m_currentLegPen(QColor(Qt::green).darker(), 0),
-    m_currentLeg(0)
+    m_currentLeg(0),
+    hudFont("Courier", 10),
+    m_solutionLength(0)
 {
     resize(900, 600);
     setRenderHints(QPainter::Antialiasing);
@@ -59,6 +61,7 @@ View::View(std::istream &in, QGraphicsScene *scene, QWidget *parent) :
             QGraphicsLineItem *leg = scene->addLine(QLineF(start, end), m_legPen);
             leg->setVisible(false);
             m_legs.append(leg);
+            m_solutionLength += qRound(leg->line().length());
             startIndex = endIndex;
         }
         m_legs[m_currentLeg]->setPen(m_currentLegPen);
@@ -98,21 +101,32 @@ void View::keyPressEvent(QKeyEvent *event) {
 }
 
 void View::drawForeground(QPainter *painter, const QRectF& rect) {
-    const int radius = 2.0;
-
     painter->setMatrixEnabled(false);
     painter->setPen(Qt::NoPen);
     painter->setBrush(Qt::black);
     painter->setRenderHint(QPainter::Antialiasing);
 
-    QRectF biggerRect = rect.adjusted(-100, -100, 100, 100);
-    QPointF viewPoint;
+    // Draw points.
+    const QRectF biggerRect = rect.adjusted(-100, -100, 100, 100);
+    const float radius = 2.0;
     foreach (const QPointF& point, m_points) {
         if (biggerRect.contains(point)) {
-            viewPoint = mapFromScene(point);
-            painter->drawEllipse(viewPoint, radius, radius);
+            painter->drawEllipse(QPointF(mapFromScene(point)), radius, radius);
         }
     }
+
+    // Draw HUD.
+    const int legLength = qRound(m_legs[m_currentLeg]->line().length());
+
+    const QString legHud = QString("Leg length: %1").arg(legLength);
+    const QString solutionHud = QString("Solution length: %1").arg(m_solutionLength);
+
+    const QPointF legHudPos = rect.bottomLeft() + QPointF(10/transform().m11(), -30/transform().m22());
+    const QPointF solutionHudPos = rect.bottomLeft() + QPointF(10/transform().m11(), -15/transform().m22());
+    painter->setFont(hudFont);
+    painter->setPen(Qt::gray);
+    painter->drawText(mapFromScene(legHudPos), legHud);
+    painter->drawText(mapFromScene(solutionHudPos), solutionHud);
 }
 
 void View::moveForward(int steps) {
