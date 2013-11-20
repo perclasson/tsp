@@ -45,6 +45,7 @@ View::View(std::istream &in, QGraphicsScene *scene, QWidget *parent) :
 
     // Read solution, if any.
     int firstIndex, startIndex, endIndex;
+    endIndex = -1;
     in >> firstIndex;
     if (!in.eof()) {
         startIndex = firstIndex;
