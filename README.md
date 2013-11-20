@@ -40,7 +40,7 @@ Example
 Assuming `test_problem.in` contains a problem and `test_solution.out`
 a solution to this problem, then
 
-    $ { cat test_problem.in && cat test_solution.out; } | ./plottsp
+    $ cat test_problem.in test_solution.out | ./plottsp
 
 could result in something like (after punching `Right` a few times):
 
