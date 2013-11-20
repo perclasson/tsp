@@ -11,3 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 # Input
 SOURCES += plottsp.cpp view.cpp
 HEADERS += view.h
+
+mac {
+  CONFIG -= app_bundle
+}
