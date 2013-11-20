@@ -49,7 +49,7 @@ View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidg
     }
 
     const float margin = qAbs(maxX - minX) / 30;
-    setSceneRect(minX - margin, minY - margin, maxX - minX + margin, maxY - minY + margin);
+    setSceneRect(minX - margin, minY - margin, maxX - minX + 2*margin, maxY - minY + 2*margin);
 
     // Read solution, if any.
     if (edgeFormat == Sequence) {
