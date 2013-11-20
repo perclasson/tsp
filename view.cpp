@@ -104,8 +104,6 @@ void View::drawForeground(QPainter *painter, const QRectF& rect) {
     painter->setBrush(Qt::black);
     painter->setRenderHint(QPainter::Antialiasing);
 
-    painter->fillRect(rect, Qt::white);
-
     QRectF biggerRect = rect.adjusted(-100, -100, 100, 100);
     QPointF viewPoint;
     foreach (const QPointF& point, m_points) {
