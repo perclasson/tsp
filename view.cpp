@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <QtGui>
+#include <QtSvg>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
@@ -13,8 +14,8 @@ class QGraphicsScene;
 // Construct a view showing problem/solution from the given input stream.
 View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidget *parent) :
     QGraphicsView(scene, parent),
-    m_legPen(Qt::black, 0),
-    m_currentLegPen(QColor(Qt::green).darker(), 0),
+    m_legPen(Qt::black, 1.0),
+    m_currentLegPen(QColor(Qt::green).darker(), 1.0),
     m_currentLeg(0),
     hudFont("Courier", 10),
     m_solutionLength(0)
@@ -25,6 +26,8 @@ View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidg
     setDragMode(QGraphicsView::ScrollHandDrag);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate); // :(
 
+    m_legPen.setCosmetic(true);
+    m_currentLegPen.setCosmetic(true);
     // Read problem.
     int numPoints;
     in >> numPoints;
@@ -83,6 +86,7 @@ void View::wheelEvent(QWheelEvent *event) {
 
 void View::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Right) {
+        // Zoom in.
         int steps = 1;
         if (event->modifiers() == Qt::ControlModifier)
             steps = 10;
@@ -90,12 +94,47 @@ void View::keyPressEvent(QKeyEvent *event) {
             steps = 100;
         moveForward(steps);
     } else if (event->key() == Qt::Key_Left) {
+        // Zoom out.
         int steps = 1;
         if (event->modifiers() == Qt::ControlModifier)
             steps = 10;
         if (event->modifiers() == Qt::ShiftModifier)
             steps = 100;
         moveBackward(steps);
+    } else if (event->key() == Qt::Key_S) {
+        if (event->modifiers() == Qt::ControlModifier) {
+            /*
+             * Render SVG.
+             */
+            QString fileName = QFileDialog::getSaveFileName(this,
+                   "Save SVG", QString(), "SVG Files (*.svg)");
+            QSvgGenerator generator;
+            generator.setFileName(fileName);
+            generator.setSize(viewport()->rect().size());
+            generator.setViewBox(viewport()->rect());
+
+            // Temporarily give legs non-cosmetic pens while rendering.
+            foreach (QGraphicsLineItem *leg, m_legs) {
+                QPen pen = leg->pen();
+                pen.setCosmetic(false);
+                pen.setWidthF(1.0/transform().m11());
+                leg->setPen(pen);
+            }
+
+            QPainter painter(&generator);
+            render(&painter);
+
+            // Restore the cosmetic pens for legs.
+            foreach (QGraphicsLineItem *leg, m_legs) {
+                QPen pen = leg->pen();
+                pen.setCosmetic(true);
+                pen.setWidthF(1.0);
+                leg->setPen(pen);
+            }
+        }
+    } else if (event->key() == Qt::Key_Escape) {
+        // Exit
+        qApp->quit();
     }
 }
 

@@ -44,6 +44,9 @@ disconnected edges instead of a path).
     Ctrl + Left          - Go back 10 steps in the solution
     Shift + Left         - Go back 100 steps in the solution
 
+    Shift + S            - Save current view to SVG
+    Escape               - Quit
+
 Example
 -------
 Assuming `test_problem.in` contains a problem and `test_solution.out`

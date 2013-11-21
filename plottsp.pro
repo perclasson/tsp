@@ -1,4 +1,5 @@
 TEMPLATE = app
+QT += svg
 TARGET = plottsp
 INCLUDEPATH += .
 QMAKE_CXXFLAGS += -g -Wall -pedantic -std=gnu++0x
