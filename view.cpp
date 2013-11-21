@@ -46,6 +46,12 @@ View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidg
         maxY = qMax(maxY, y);
         sumX += x;
         sumY += y;
+        QGraphicsEllipseItem *item = scene->addEllipse(-2.0, -2.0, 4.0, 4.0);
+        item->setPos(x, y);
+        item->setPen(Qt::NoPen);
+        item->setBrush(Qt::black);
+        item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        item->setZValue(1); // On top of edges.
     }
 
     const float margin = qAbs(maxX - minX) / 30;
@@ -95,22 +101,11 @@ void View::keyPressEvent(QKeyEvent *event) {
 
 void View::drawForeground(QPainter *painter, const QRectF& rect) {
     painter->setMatrixEnabled(false);
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(Qt::black);
     painter->setRenderHint(QPainter::Antialiasing);
-
-    // Draw points.
-    const QRectF biggerRect = rect.adjusted(-100, -100, 100, 100);
-    const float radius = 2.0;
-    foreach (const QPointF& point, m_points) {
-        if (biggerRect.contains(point)) {
-            painter->drawEllipse(QPointF(mapFromScene(point)), radius, radius);
-        }
-    }
-
-    // Draw solution length HUD text.
     painter->setFont(hudFont);
     painter->setPen(Qt::gray);
+
+    // Draw solution length HUD text.
     const QString solutionHud = QString("Solution length: %1").arg(m_solutionLength);
     const QPointF solutionHudPos = rect.bottomLeft() +
         QPointF(10/transform().m11(), -15/transform().m22());
