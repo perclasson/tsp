@@ -8,6 +8,7 @@
 #endif
 
 #include "view.h"
+#include "vertex.h"
 
 class QGraphicsScene;
 
@@ -49,11 +50,12 @@ View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidg
         maxY = qMax(maxY, y);
         sumX += x;
         sumY += y;
-        QGraphicsEllipseItem *item = scene->addEllipse(-2.0, -2.0, 4.0, 4.0);
-        item->setPos(x, y);
-        item->setPen(Qt::NoPen);
-        item->setBrush(Qt::black);
-        item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        Vertex *item;
+        if (numPoints < 100)
+            item = new Vertex(x, y, 8, i, Vertex::ShowLabel);
+        else
+            item = new Vertex(x, y, 2, i, Vertex::NoLabel);
+        scene->addItem(item);
         item->setZValue(1); // On top of edges.
     }
 
