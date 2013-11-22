@@ -20,6 +20,7 @@ class Vertex : public QGraphicsEllipseItem {
             setPos(x, y);
             setFlag(QGraphicsItem::ItemIgnoresTransformations);
             m_labelFont.setPointSize(6);
+            m_labelFont.setBold(true);
 
             if (m_labelMode == ShowLabel) {
                 setPen(QPen(Qt::black));
