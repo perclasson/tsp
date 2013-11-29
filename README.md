@@ -29,7 +29,7 @@ disconnected edges instead of a path).
 ### General Usage
     Usage: plottsp [ -h | -p ]
        -h     Show help message
-       -p     Expect edges as point pairs (default is sequence)
+       -p     Expect edges as point pairs (default is point sequence)
     Input is read from standard input
 
 ### Available Controls

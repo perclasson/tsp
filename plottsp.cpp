@@ -12,7 +12,7 @@
 const std::string helpMessage =
     "Usage: plottsp [ -h | -p ]\n"
     "   -h     Show help message\n"
-    "   -p     Expect edges as point pairs (default is sequence)\n"
+    "   -p     Expect edges as point pairs (default is point sequence)\n"
     "Input is read from standard input";
 
 int main(int argc, char *argv[]) {
