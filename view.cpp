@@ -26,6 +26,7 @@ View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidg
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     setDragMode(QGraphicsView::ScrollHandDrag);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate); // :(
+    setBackgroundBrush(Qt::white);
 
     m_legPen.setCosmetic(true);
     m_currentLegPen.setCosmetic(true);
