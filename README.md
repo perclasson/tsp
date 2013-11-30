@@ -27,9 +27,11 @@ point pairs instead (useful if you want to plot arbitrary
 disconnected edges instead of a path).
 
 ### General Usage
-    Usage: plottsp [ -h | -p ]
+    Usage: plottsp [ -h | -p | -c | -l ]
        -h     Show help message
        -p     Expect edges as point pairs (default is point sequence)
+       -c     Draw the complete graph (careful!)
+       -l     Show edge length labels
     Input is read from standard input
 
 ### Available Controls
@@ -52,7 +54,7 @@ Example
 Assuming `test_problem.in` contains a problem and `test_solution.out`
 a solution to this problem, then
 
-    $ cat test_problem.in test_solution.out | ./plottsp
+    $ cat test_problem.in test_solution.out | ./plottsp -l
 
 could result in something like (after punching `Right` a few times):
 

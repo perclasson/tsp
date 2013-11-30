@@ -13,13 +13,15 @@
 class QGraphicsScene;
 
 // Construct a view showing problem/solution from the given input stream.
-View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidget *parent) :
+View::View(std::istream &in, Options options, QGraphicsScene *scene, QWidget *parent) :
     QGraphicsView(scene, parent),
     m_legPen(Qt::black, 1.0),
     m_currentLegPen(QColor(Qt::green).darker(), 1.0),
     m_currentLeg(0),
-    hudFont("Courier", 10),
-    m_solutionLength(0)
+    m_hudFont("Courier", 10),
+    m_labelFont("Courier", 6),
+    m_solutionLength(0),
+    m_options(options)
 {
     resize(900, 600);
     setRenderHints(QPainter::Antialiasing);
@@ -31,7 +33,7 @@ View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidg
     m_legPen.setCosmetic(true);
     m_currentLegPen.setCosmetic(true);
 
-    // Read problem.
+    // Read points.
     int numPoints;
     in >> numPoints;
     m_points.resize(numPoints);
@@ -53,25 +55,51 @@ View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidg
         sumX += x;
         sumY += y;
         Vertex *item;
-        if (numPoints < 100)
+        if (numPoints < 100) {
+            // If we have less than 100 vertices, we label them.
             item = new Vertex(x, y, 8, i, Vertex::ShowLabel);
-        else
+        } else {
+            // We just draw them as dots.
             item = new Vertex(x, y, 2, i, Vertex::NoLabel);
+        }
         scene->addItem(item);
         item->setZValue(1); // On top of edges.
+
     }
 
-    const float margin = qAbs(maxX - minX) / 30;
-    setSceneRect(minX - margin, minY - margin, maxX - minX + 2*margin, maxY - minY + 2*margin);
+    if (m_options & CompleteGraph) {
+        // Add the complete set of edges.
+        QPen edgePen(Qt::gray);
+        edgePen.setCosmetic(true);
+        for (int i = 0; i < numPoints; ++i) {
+            for (int j = 0; j < numPoints; ++j) {
+                if (i == j)
+                    continue;
+                float x1 = m_points[i].x();
+                float y1 = m_points[i].y();
+                float x2 = m_points[j].x();
+                float y2 = m_points[j].y();
+
+                QGraphicsLineItem *edgeItem = scene->addLine(x1, y1, x2, y2, edgePen);
+                m_edges.append(edgeItem);
+
+                if (m_options & ShowLengths) {
+                    addLengthLabel(x1, y1, x2, y2);
+                }
+            }
+        }
+    }
 
     // Read solution, if any.
-    if (edgeFormat == Sequence) {
-        readPointSequence(in);
-    } else {
+    if (m_options & PointPairs) {
         readPointPairs(in);
+    } else {
+        readPointSequence(in);
     }
 
     // Center view on mean coordinate and zoom to fit entire scene.
+    const float margin = qAbs(maxX - minX) / 30;
+    setSceneRect(minX - margin, minY - margin, maxX - minX + 2*margin, maxY - minY + 2*margin);
     centerOn(QPointF(sumX / numPoints, sumY / numPoints));
     fitInView(sceneRect(), Qt::KeepAspectRatio);
 }
@@ -117,23 +145,35 @@ void View::keyPressEvent(QKeyEvent *event) {
             generator.setSize(viewport()->rect().size());
             generator.setViewBox(viewport()->rect());
 
-            // Temporarily give legs non-cosmetic pens while rendering.
+            // Temporarily give legs and edges non-cosmetic pens while rendering.
             foreach (QGraphicsLineItem *leg, m_legs) {
                 QPen pen = leg->pen();
                 pen.setCosmetic(false);
                 pen.setWidthF(1.0/transform().m11());
                 leg->setPen(pen);
             }
+            foreach (QGraphicsLineItem *edge, m_edges) {
+                QPen pen = edge->pen();
+                pen.setCosmetic(false);
+                pen.setWidthF(1.0/transform().m11());
+                edge->setPen(pen);
+            }
 
             QPainter painter(&generator);
             render(&painter);
 
-            // Restore the cosmetic pens for legs.
+            // Restore the cosmetic pens for legs and edges.
             foreach (QGraphicsLineItem *leg, m_legs) {
                 QPen pen = leg->pen();
                 pen.setCosmetic(true);
                 pen.setWidthF(1.0);
                 leg->setPen(pen);
+            }
+            foreach (QGraphicsLineItem *edge, m_edges) {
+                QPen pen = edge->pen();
+                pen.setCosmetic(true);
+                pen.setWidthF(1.0);
+                edge->setPen(pen);
             }
         }
     } else if (event->key() == Qt::Key_Escape) {
@@ -145,7 +185,7 @@ void View::keyPressEvent(QKeyEvent *event) {
 void View::drawForeground(QPainter *painter, const QRectF& rect) {
     painter->setMatrixEnabled(false);
     painter->setRenderHint(QPainter::Antialiasing);
-    painter->setFont(hudFont);
+    painter->setFont(m_hudFont);
     painter->setPen(Qt::gray);
 
     // Draw solution length HUD text.
@@ -167,10 +207,8 @@ void View::drawForeground(QPainter *painter, const QRectF& rect) {
 void View::moveForward(int steps) {
     for (int i = 0; i < steps; ++i) {
         if (m_currentLeg < m_legs.size() - 1) {
-            m_legs[m_currentLeg]->setPen(m_legPen);
-            ++m_currentLeg;
-            m_legs[m_currentLeg]->setVisible(true);
-            m_legs[m_currentLeg]->setPen(m_currentLegPen);
+            m_legs[m_currentLeg++]->setPen(m_legPen);
+            showCurrentLeg();
         }
     }
 }
@@ -178,53 +216,92 @@ void View::moveForward(int steps) {
 void View::moveBackward(int steps) {
     for (int i = 0; i < steps; ++i) {
         if (m_currentLeg > 0) {
-            m_legs[m_currentLeg]->setVisible(false);
-            m_legs[m_currentLeg]->setPen(m_legPen);
-            --m_currentLeg;
-            m_legs[m_currentLeg]->setPen(m_currentLegPen);
+            hideCurrentLeg();
+            m_legs[--m_currentLeg]->setPen(m_currentLegPen);
         }
     }
 }
 
 void View::readPointSequence(std::istream& in) {
-    int firstIndex, startIndex, endIndex;
-    endIndex = -1;
-    in >> firstIndex;
-    if (!in.eof()) {
-        startIndex = firstIndex;
-        while (endIndex != firstIndex) {
-            if (in.eof())
-                endIndex = firstIndex;
-            else
-                in >> endIndex;
+    // Read solution points.
+    QList<int> solutionPoints;
+    while (in.good()) {
+        int point;
+        in >> point;
+        if (in.good()) {
+            solutionPoints.append(point);
+        }
+    }
+    if (solutionPoints.size() < 2)
+        return; // Need at least two points.
+
+    // Create lines / length labels.
+    for (int i = 0, j = 1; i < solutionPoints.size(); ++i, ++j) {
+        QPointF start = m_points[solutionPoints[i]];
+        QPointF end = m_points[solutionPoints[j % solutionPoints.size()]];
+        QGraphicsLineItem *leg = scene()->addLine(QLineF(start, end), m_legPen);
+        leg->setVisible(false);
+        m_legs.append(leg);
+        m_solutionLength += qRound(leg->line().length());
+        if (m_options & ShowLengths) {
+            QGraphicsTextItem *label = addLengthLabel(start.x(), start.y(), end.x(), end.y());
+            m_legLabels.append(label);
+            label->setVisible(false);
+        }
+    }
+
+    showCurrentLeg();
+}
+
+void View::readPointPairs(std::istream& in) {
+    while (in.good()) {
+        // Read point pair.
+        int startIndex;
+        int endIndex;
+        in >> startIndex >> endIndex;
+        if (in.good()) {
+            // Create line / length label.
             QPointF start = m_points[startIndex];
             QPointF end = m_points[endIndex];
             QGraphicsLineItem *leg = scene()->addLine(QLineF(start, end), m_legPen);
             leg->setVisible(false);
             m_legs.append(leg);
             m_solutionLength += qRound(leg->line().length());
-            startIndex = endIndex;
+            if (m_options & ShowLengths) {
+                QGraphicsTextItem *label = addLengthLabel(start.x(), start.y(), end.x(), end.y());
+                m_legLabels.append(label);
+                label->setVisible(false);
+            }
         }
-        m_legs[m_currentLeg]->setPen(m_currentLegPen);
-        m_legs[m_currentLeg]->setVisible(true);
+    }
+    showCurrentLeg();
+}
+
+void View::showCurrentLeg() {
+    if (m_legs.isEmpty())
+        return;
+    m_legs[m_currentLeg]->setPen(m_currentLegPen);
+    m_legs[m_currentLeg]->setVisible(true);
+    if (m_options & ShowLengths) {
+        m_legLabels[m_currentLeg]->setVisible(true);
     }
 }
 
-void View::readPointPairs(std::istream& in) {
-    while (!in.eof()) {
-        int startIndex, endIndex;
-        in >> startIndex >> endIndex;
-        if (in.eof())
-            break; // Hack: To avoid last edge being added twice.
-        QPointF start = m_points[startIndex];
-        QPointF end = m_points[endIndex];
-        QGraphicsLineItem *leg = scene()->addLine(QLineF(start, end), m_legPen);
-        leg->setVisible(false);
-        m_legs.append(leg);
-        m_solutionLength += qRound(leg->line().length());
-    }
-    if (!m_legs.isEmpty()) {
-        m_legs[m_currentLeg]->setPen(m_currentLegPen);
-        m_legs[m_currentLeg]->setVisible(true);
+void View::hideCurrentLeg() {
+    if (m_legs.isEmpty())
+        return;
+    m_legs[m_currentLeg]->setVisible(false);
+    m_legs[m_currentLeg]->setPen(m_legPen);
+    if (m_options & ShowLengths) {
+        m_legLabels[m_currentLeg]->setVisible(false);
     }
 }
+
+QGraphicsTextItem *View::addLengthLabel(double x1, double y1, double x2, double y2) {
+    const double length = qRound(qSqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2)));
+    QGraphicsTextItem *item = scene()->addText(QString::number(length), m_labelFont);
+    item->setPos((x1 + x2) / 2, (y1 + y2) / 2);
+    item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    return item;
+}
+
