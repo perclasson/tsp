@@ -30,6 +30,7 @@ View::View(std::istream &in, EdgeFormat edgeFormat, QGraphicsScene *scene, QWidg
 
     m_legPen.setCosmetic(true);
     m_currentLegPen.setCosmetic(true);
+
     // Read problem.
     int numPoints;
     in >> numPoints;
