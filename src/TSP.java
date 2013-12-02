@@ -23,7 +23,7 @@ public class TSP {
 		}
 
 		distances = calculateEuclideanDistance();
-		route = twoOptSearch(nearestNeighbour());
+		route = twoOptSearch(nearestNeighbourRoute());
 
 		if (benchmark) {
 			System.out.println(calculateTotalDistance(route));
@@ -35,8 +35,8 @@ public class TSP {
 	}
 
 	private Short[] twoOptSearch(Short[] existingRoute) {
+		int bestDistance = calculateTotalDistance(existingRoute);
 		search: while (true) {
-			int bestDistance = calculateTotalDistance(existingRoute);
 			for (int i = 0; i < existingRoute.length - 1; i++) {
 				for (int k = i + 1; k < existingRoute.length; k++) {
 					if (System.currentTimeMillis() >= deadline)
@@ -46,6 +46,7 @@ public class TSP {
 					int newDistance = calculateTotalDistance(newRoute);
 					if (newDistance < bestDistance) {
 						existingRoute = newRoute;
+						bestDistance = newDistance;
 						continue search;
 					}
 				}
@@ -60,7 +61,7 @@ public class TSP {
 		Collections.reverse(routeList.subList(i, k));
 	}
 
-	private Short[] nearestNeighbour() {
+	private Short[] nearestNeighbourRoute() {
 		Short[] newRoute = new Short[distances.length];
 		boolean[] visited = new boolean[distances.length];
 
@@ -69,16 +70,16 @@ public class TSP {
 		visited[firstVertex] = true;
 
 		for (int i = 0; i < newRoute.length - 1; i++) {
-			newRoute[i + 1] = findNearestVertex(newRoute[i], visited);
+			newRoute[i + 1] = findNearestNeighbour(newRoute[i], visited);
 		}
 
 		return newRoute;
 	}
 
-	private short findNearestVertex(int from, boolean[] visited) {
+	private short findNearestNeighbour(int from, boolean[] visited) {
 		int minCost = Integer.MAX_VALUE;
-		int nearest = 0;
-		for (int to = 0; to < distances.length; to++) {
+		short nearest = 0;
+		for (short to = 0; to < distances.length; to++) {
 			int cost = getDistance(from, to);
 			if (!visited[to] && cost < minCost) {
 				minCost = cost;
@@ -86,7 +87,7 @@ public class TSP {
 			}
 		}
 		visited[nearest] = true;
-		return (short) nearest;
+		return nearest;
 	}
 
 	private int calculateTotalDistance(Short[] route) {
