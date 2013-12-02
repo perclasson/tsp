@@ -6,11 +6,12 @@ import java.util.Collections;
 import java.util.List;
 
 public class TSP {
-	private static final int TIME_LIMIT = 1700;
+	private static final int TIME_LIMIT = 1500;
 	private double[][] coordinates;
 	private int[][] distances;
 	private Short[] route;
-	long deadline;
+	private long deadline;
+	private static boolean benchmark;
 
 	public TSP() {
 		deadline = System.currentTimeMillis() + TIME_LIMIT;
@@ -20,12 +21,16 @@ public class TSP {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		distances = calculateEuclideanDistance();
 		route = twoOptSearch(nearestNeighbour());
 
-		for (int i = 0; i < route.length; i++) {
-			System.out.println(route[i]);
+		if (benchmark) {
+			System.out.println(calculateTotalDistance(route));
+		} else {
+			for (int i = 0; i < route.length; i++) {
+				System.out.println(route[i]);
+			}
 		}
 	}
 
@@ -130,6 +135,9 @@ public class TSP {
 	}
 
 	public static void main(String[] args) {
+		if (args.length > 0 && args[0].equals("benchmark")) {
+			benchmark = true;
+		}
 		new TSP();
 	}
 }

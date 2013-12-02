@@ -1,2 +1,2 @@
 #!/bin/bash
-time java -cp ../bin/ TSP < $1.in
+time java -cp ../bin/ -agentlib:hprof=cpu=times TSP < $1.in
