@@ -1,7 +1,9 @@
 #ifndef VERTEX_H
 #define VERTEX_H
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#endif
 
 class Vertex : public QGraphicsEllipseItem {
     public:
