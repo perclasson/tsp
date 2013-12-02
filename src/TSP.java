@@ -55,10 +55,9 @@ public class TSP {
 		return existingRoute;
 	}
 
-	private Short[] twoOptSwap(Short[] route, int i, int k) {
+	private void twoOptSwap(Short[] route, int i, int k) {
 		List<Short> routeList = Arrays.asList(route);
 		Collections.reverse(routeList.subList(i, k));
-		return (Short[]) routeList.toArray();
 	}
 
 	private Short[] nearestNeighbour() {

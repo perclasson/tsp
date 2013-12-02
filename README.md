@@ -1,7 +1,12 @@
 tsp
 ===
 
-To generate a test:
+To perform benchmarks:
+
+    cd tests
+    ./benchmark.sh
+
+To generate a graph:
 
     cd graph
     ./mkgraph [ -h | -hn | -hu ] [ [ -n <spec> | -u <spec> ] ... ]
