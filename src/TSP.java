@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class TSP {
-	private static final int TIME_LIMIT = 1500;
+	private static final int TIME_LIMIT = 1700;
 	private double[][] coordinates;
 	private int[][] distances;
 	private Short[] route;
@@ -22,7 +22,6 @@ public class TSP {
 		}
 		
 		distances = calculateEuclideanDistance();
-
 		route = twoOptSearch(nearestNeighbour());
 
 		for (int i = 0; i < route.length; i++) {
@@ -32,11 +31,11 @@ public class TSP {
 
 	private Short[] twoOptSearch(Short[] existingRoute) {
 		search: while (true) {
-			if (System.currentTimeMillis() >= deadline)
-				break;
 			int bestDistance = calculateTotalDistance(existingRoute);
 			for (int i = 0; i < existingRoute.length - 1; i++) {
 				for (int k = i + 1; k < existingRoute.length; k++) {
+					if (System.currentTimeMillis() >= deadline)
+						break search;
 					Short[] newRoute = existingRoute.clone();
 					twoOptSwap(newRoute, i, k);
 					int newDistance = calculateTotalDistance(newRoute);
