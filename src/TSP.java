@@ -41,11 +41,9 @@ public class TSP {
 				for (int k = i + 1; k < existingRoute.size(); k++) {
 					if (System.currentTimeMillis() >= deadline)
 						break search;
-					List<Short> newRoute = new ArrayList<Short>();// (existingRoute);
-					twoOptSwap(newRoute, i, k);
-					int newDistance = calculateTotalDistance(newRoute);
+					int newDistance = bestDistance - gainAfterSwap(existingRoute, i, k);
 					if (newDistance < bestDistance) {
-						existingRoute = newRoute;
+						twoOptSwap(existingRoute, i, k);
 						bestDistance = newDistance;
 						continue search;
 					}
@@ -54,6 +52,24 @@ public class TSP {
 			break;
 		}
 		return existingRoute;
+	}
+
+	private int gainAfterSwap(List<Short> existingRoute, int i, int k) {
+		short first, last;
+		if (i == 0)
+			first = existingRoute.get(existingRoute.size() - 1);
+		else
+			first = existingRoute.get(i - 1);
+
+		if (k == existingRoute.size() - 1)
+			last = existingRoute.get(0);
+		else
+			last = existingRoute.get(k + 1);
+
+		int previousCost = getDistance(first, existingRoute.get(i)) + getDistance(existingRoute.get(k), last);
+		int newCost = getDistance(first, existingRoute.get(k)) + getDistance(existingRoute.get(i), last);
+
+		return previousCost - newCost;
 	}
 
 	private void twoOptSwap(List<Short> route, int i, int k) {
@@ -68,7 +84,7 @@ public class TSP {
 		newRoute.add(firstVertex);
 		visited[firstVertex] = true;
 
-		for (int i = 0; i < newRoute.size() - 1; i++) {
+		for (int i = 0; i < distances.length - 1; i++) {
 			newRoute.add(findNearestNeighbour(newRoute.get(i), visited));
 		}
 
