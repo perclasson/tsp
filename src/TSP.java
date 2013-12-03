@@ -91,9 +91,9 @@ public class TSP {
 	}
 
 	private int calculateTotalDistance(Short[] route) {
-		int sum = 0;
-		for (int i = 0; i < route.length; i++) {
-			sum += getDistance(route[i], route[(i + 1) % route.length]);
+		int sum = getDistance(route[route.length - 1], route[0]);
+		for (int i = 0; i < route.length - 1; i++) {
+			sum += getDistance(route[i], route[(i + 1)]);
 		}
 		return sum;
 	}
