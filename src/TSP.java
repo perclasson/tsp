@@ -1,7 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,7 +9,7 @@ public class TSP {
 	private static final int TIME_LIMIT = 1500;
 	private double[][] coordinates;
 	private int[][] distances;
-	private Short[] route;
+	private List<Short> route;
 	private long deadline;
 	private static boolean benchmark;
 
@@ -28,20 +28,20 @@ public class TSP {
 		if (benchmark) {
 			System.out.println(calculateTotalDistance(route));
 		} else {
-			for (int i = 0; i < route.length; i++) {
-				System.out.println(route[i]);
+			for (int i = 0; i < route.size(); i++) {
+				System.out.println(route.get(i));
 			}
 		}
 	}
 
-	private Short[] twoOptSearch(Short[] existingRoute) {
+	private List<Short> twoOptSearch(List<Short> existingRoute) {
 		int bestDistance = calculateTotalDistance(existingRoute);
 		search: while (true) {
-			for (int i = 0; i < existingRoute.length - 1; i++) {
-				for (int k = i + 1; k < existingRoute.length; k++) {
+			for (int i = 0; i < existingRoute.size() - 1; i++) {
+				for (int k = i + 1; k < existingRoute.size(); k++) {
 					if (System.currentTimeMillis() >= deadline)
 						break search;
-					Short[] newRoute = existingRoute.clone();
+					List<Short> newRoute = new ArrayList<Short>();// (existingRoute);
 					twoOptSwap(newRoute, i, k);
 					int newDistance = calculateTotalDistance(newRoute);
 					if (newDistance < bestDistance) {
@@ -56,21 +56,20 @@ public class TSP {
 		return existingRoute;
 	}
 
-	private void twoOptSwap(Short[] route, int i, int k) {
-		List<Short> routeList = Arrays.asList(route);
-		Collections.reverse(routeList.subList(i, k));
+	private void twoOptSwap(List<Short> route, int i, int k) {
+		Collections.reverse(route.subList(i, k));
 	}
 
-	private Short[] nearestNeighbourRoute() {
-		Short[] newRoute = new Short[distances.length];
+	private List<Short> nearestNeighbourRoute() {
+		List<Short> newRoute = new ArrayList<Short>();
 		boolean[] visited = new boolean[distances.length];
 
-		int firstVertex = 0;
-		newRoute[0] = (short) firstVertex;
+		short firstVertex = 0;
+		newRoute.add(firstVertex);
 		visited[firstVertex] = true;
 
-		for (int i = 0; i < newRoute.length - 1; i++) {
-			newRoute[i + 1] = findNearestNeighbour(newRoute[i], visited);
+		for (int i = 0; i < newRoute.size() - 1; i++) {
+			newRoute.add(findNearestNeighbour(newRoute.get(i), visited));
 		}
 
 		return newRoute;
@@ -90,10 +89,10 @@ public class TSP {
 		return nearest;
 	}
 
-	private int calculateTotalDistance(Short[] route) {
-		int sum = getDistance(route[route.length - 1], route[0]);
-		for (int i = 0; i < route.length - 1; i++) {
-			sum += getDistance(route[i], route[(i + 1)]);
+	private int calculateTotalDistance(List<Short> route) {
+		int sum = getDistance(route.get(route.size() - 1), route.get(0));
+		for (int i = 0; i < route.size() - 1; i++) {
+			sum += getDistance(route.get(i), route.get(i + 1));
 		}
 		return sum;
 	}
