@@ -34,42 +34,42 @@ public class TSP {
 		}
 	}
 
-	private List<Short> twoOptSearch(List<Short> existingRoute) {
-		int bestDistance = calculateTotalDistance(existingRoute);
-		search: while (true) {
-			for (int i = 0; i < existingRoute.size() - 1; i++) {
-				for (int k = i + 1; k < existingRoute.size(); k++) {
+	private List<Short> twoOptSearch(List<Short> route) {
+		boolean improved = true;
+		search: while (improved) {
+			improved = false;
+			for (int i = 1; i < route.size() - 1; i++) {
+				for (int k = i + 1; k < route.size(); k++) {
 					if (System.currentTimeMillis() >= deadline)
 						break search;
-					int newDistance = bestDistance - gainAfterSwap(existingRoute, i, k);
-					if (newDistance < bestDistance) {
-						twoOptSwap(existingRoute, i, k);
-						bestDistance = newDistance;
+					if (isGain(route, i, k)) {
+						twoOptSwap(route, i, k + 1);
+						improved = true;
 						continue search;
 					}
 				}
 			}
 			break;
 		}
-		return existingRoute;
+		return route;
 	}
 
-	private int gainAfterSwap(List<Short> existingRoute, int i, int k) {
-		short first, last;
-		if (i == 0)
-			first = existingRoute.get(existingRoute.size() - 1);
-		else
-			first = existingRoute.get(i - 1);
+	private boolean isGain(List<Short> route, int i, int k) {
+		int a = i - 1;
+		int b = i;
+		int c = k;
+		int d = k + 1;
 
-		if (k == existingRoute.size() - 1)
-			last = existingRoute.get(0);
-		else
-			last = existingRoute.get(k + 1);
+		if (b == 0)
+			a = route.size() - 1;
 
-		int previousCost = getDistance(first, existingRoute.get(i)) + getDistance(existingRoute.get(k), last);
-		int newCost = getDistance(first, existingRoute.get(k)) + getDistance(existingRoute.get(i), last);
+		if (d == route.size())
+			d = 0;
 
-		return previousCost - newCost;
+		int prevCost = getDistance(route.get(a), route.get(b)) + getDistance(route.get(c), route.get(d));
+		int newCost = getDistance(route.get(a), route.get(c)) + getDistance(route.get(b), route.get(d));
+
+		return newCost < prevCost;
 	}
 
 	private void twoOptSwap(List<Short> route, int i, int k) {
