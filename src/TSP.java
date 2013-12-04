@@ -6,15 +6,12 @@ import java.util.Collections;
 import java.util.List;
 
 public class TSP {
-	private static final int TIME_LIMIT = 1500;
 	private double[][] coordinates;
 	private int[][] distances;
-	private List<Short> route;
-	private long deadline;
 	private static boolean benchmark;
 
 	public TSP() {
-		deadline = System.currentTimeMillis() + TIME_LIMIT;
+		long deadline = System.currentTimeMillis();
 
 		try {
 			coordinates = readCoordinates();
@@ -23,7 +20,7 @@ public class TSP {
 		}
 
 		distances = calculateEuclideanDistance();
-		route = twoOptSearch(nearestNeighbourRoute());
+		List<Short> route = twoOptSearch(nearestNeighbourRoute(), deadline + 1500);
 
 		if (benchmark) {
 			System.out.println(calculateTotalDistance(route));
@@ -34,7 +31,7 @@ public class TSP {
 		}
 	}
 
-	private List<Short> twoOptSearch(List<Short> route) {
+	private List<Short> twoOptSearch(List<Short> route, long deadline) {
 		boolean improved = true;
 		search: while (improved) {
 			improved = false;
@@ -75,6 +72,7 @@ public class TSP {
 	private void twoOptSwap(List<Short> route, int i, int k) {
 		Collections.reverse(route.subList(i, k));
 	}
+
 
 	private List<Short> nearestNeighbourRoute() {
 		List<Short> newRoute = new ArrayList<Short>();
