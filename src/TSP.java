@@ -20,7 +20,7 @@ public class TSP {
 		}
 
 		distances = calculateEuclideanDistance();
-		List<Short> route = twoOptSearch(nearestNeighbourRoute(), deadline + 1500);
+		List<Short> route = twoOpt(nearestNeighbourConstruct(), deadline + 1500);
 
 		if (benchmark) {
 			System.out.println(calculateTotalDistance(route));
@@ -31,7 +31,7 @@ public class TSP {
 		}
 	}
 
-	private List<Short> twoOptSearch(List<Short> route, long deadline) {
+	private List<Short> twoOpt(List<Short> route, long deadline) {
 		boolean improved = true;
 		search: while (improved) {
 			improved = false;
@@ -74,7 +74,7 @@ public class TSP {
 	}
 
 
-	private List<Short> nearestNeighbourRoute() {
+	private List<Short> nearestNeighbourConstruct() {
 		List<Short> newRoute = new ArrayList<Short>();
 		boolean[] visited = new boolean[distances.length];
 

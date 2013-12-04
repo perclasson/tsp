@@ -65,8 +65,8 @@ public class TSP2 {
 		if (d == route.length)
 			d = 0;
 
-		int prevCost = getDistance(route[a], route[b]) + getDistance(route[c], route[d]);
-		int newCost = getDistance(route[a], route[c]) + getDistance(route[b], route[d]);
+		int prevCost = distances[route[a]][route[b]] + distances[route[c]][route[d]];
+		int newCost = distances[route[a]][route[c]] + distances[route[b]][route[d]];
 
 		return (prevCost - newCost) > 0;
 	}
@@ -95,7 +95,7 @@ public class TSP2 {
 		int minCost = Integer.MAX_VALUE;
 		short nearest = 0;
 		for (short to = 0; to < distances.length; to++) {
-			int cost = getDistance(from, to);
+			int cost = distances[from][to];
 			if (!visited[to] && cost < minCost) {
 				minCost = cost;
 				nearest = to;
@@ -106,9 +106,9 @@ public class TSP2 {
 	}
 
 	private int calculateTotalDistance(Short[] route) {
-		int sum = getDistance(route[route.length - 1], route[0]);
+		int sum = distances[route[route.length - 1]][route[0]];
 		for (int i = 0; i < route.length - 1; i++) {
-			sum += getDistance(route[i], route[(i + 1)]);
+			sum += distances[route[i]][route[(i + 1)]];
 		}
 		return sum;
 	}
@@ -116,9 +116,11 @@ public class TSP2 {
 	private int[][] calculateEuclideanDistance() {
 		int[][] euclideanDistances = new int[coordinates.length][];
 		for (int i = 0; i < coordinates.length; i++) {
-			euclideanDistances[i] = new int[i + 1];
+			euclideanDistances[i] = new int[coordinates.length];
 			for (int j = 0; j < i; j++) {
-				euclideanDistances[i][j] = euclidianDistance(coordinates[i], coordinates[j]);
+				int dist = euclidianDistance(coordinates[i], coordinates[j]);
+				euclideanDistances[i][j] = dist;
+				euclideanDistances[j][i] = dist;
 			}
 		}
 		return euclideanDistances;
@@ -126,14 +128,6 @@ public class TSP2 {
 
 	private int euclidianDistance(double[] i, double[] j) {
 		return (int) Math.round(Math.sqrt(Math.pow(i[0] - j[0], 2) + Math.pow(i[1] - j[1], 2)));
-	}
-
-	private int getDistance(int i, int j) {
-		if (j > i) {
-			return distances[j][i];
-		} else {
-			return distances[i][j];
-		}
 	}
 
 	private double[][] readCoordinates() throws IOException {
