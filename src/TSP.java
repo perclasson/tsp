@@ -23,7 +23,6 @@ public class TSP {
 		}
 
 		calculateAllDistances();
-		createNearestNeighbours();
 		Short[] route = new NearestNeighbour(distances, neighbours).run();
 		route = new TwoOpt(distances, neighbours).run(route, deadline + 1500);
 

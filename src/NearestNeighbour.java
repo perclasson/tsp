@@ -26,6 +26,19 @@ public class NearestNeighbour {
 	}
 
 	private short findNearestNeighbour(int from, boolean[] visited) {
+		int minCost = Integer.MAX_VALUE;
+		short nearest = 0;
+		for (short to = 0; to < distances.length; to++) {
+			int cost = distances[from][to];
+			if (!visited[to] && cost < minCost) {
+				minCost = cost;
+				nearest = to;
+			}
+		}
+		visited[nearest] = true;
+		return nearest;
+	}
+	private short findNearestNeighbourFail(int from, boolean[] visited) {
 		for (Short to : neighbours.get(from)) {
 			if (!visited[to]) {
 				visited[to] = true;

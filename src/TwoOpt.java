@@ -14,19 +14,28 @@ public class TwoOpt {
 	}
 
 	public Short[] run(Short[] route, long deadline) {
+		boolean[] dontLook = new boolean[route.length];
 		boolean improved = true;
 		search: while (improved) {
 			improved = false;
 			for (int i = 1; i < route.length - 1; i++) {
+				if (dontLook[i])
+					continue;
+				boolean improveFlag = false;
 				for (int k = i + 1; k < route.length; k++) {
 					if (System.currentTimeMillis() >= deadline)
 						break search;
 					if (isGain(route, i, k)) {
 						twoOptSwap(route, i, k + 1);
+						dontLook[i] = false;
+						dontLook[k] = false;
 						improved = true;
+						improveFlag = true;
 						continue search;
 					}
 				}
+				if (!improveFlag)
+					dontLook[i] = true;
 			}
 			break;
 		}
