@@ -1,9 +1,13 @@
+import java.util.List;
+
 public class NearestNeighbour {
 
-	private int[][] distances;
+	private Integer[][] distances;
+	private List<List<Short>> neighbours;
 
-	public NearestNeighbour(int[][] distances) {
+	public NearestNeighbour(Integer[][] distances, List<List<Short>> neighbours) {
 		this.distances = distances;
+		this.neighbours = neighbours;
 	}
 
 	public Short[] run() {
@@ -22,6 +26,13 @@ public class NearestNeighbour {
 	}
 
 	private short findNearestNeighbour(int from, boolean[] visited) {
+		for (Short to : neighbours.get(from)) {
+			if (!visited[to]) {
+				visited[to] = true;
+				return to;
+			}
+		}
+
 		int minCost = Integer.MAX_VALUE;
 		short nearest = 0;
 		for (short to = 0; to < distances.length; to++) {

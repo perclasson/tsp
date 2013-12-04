@@ -5,10 +5,12 @@ import java.util.List;
 
 public class TwoOpt {
 
-	private int[][] distances;
+	private Integer[][] distances;
+	private List<List<Short>> neighbours;
 
-	public TwoOpt(int[][] distances) {
+	public TwoOpt(Integer[][] distances, List<List<Short>> neighbours) {
 		this.distances = distances;
+		this.neighbours = neighbours;
 	}
 
 	public Short[] run(Short[] route, long deadline) {
@@ -21,6 +23,28 @@ public class TwoOpt {
 						break search;
 					if (isGain(route, i, k)) {
 						twoOptSwap(route, i, k + 1);
+						improved = true;
+						continue search;
+					}
+				}
+			}
+			break;
+		}
+		return route;
+	}
+
+	private Short[] runFail(Short[] route, long deadline) {
+		boolean improved = true;
+		search: while (improved) {
+			improved = false;
+			for (int i = 0; i < route.length; i++) {
+				for (Short k : neighbours.get(i)) {
+					if (System.currentTimeMillis() >= deadline)
+						break search;
+					int a = Math.min(i, k);
+					int b = Math.max(i, k);
+					if (a != b && isGain(route, a, b)) {
+						twoOptSwap(route, a, b);
 						improved = true;
 						continue search;
 					}

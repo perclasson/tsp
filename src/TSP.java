@@ -1,11 +1,17 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class TSP {
 	private double[][] coordinates;
-	private int[][] distances;
+	private Integer[][] distances;
 	private static boolean benchmark;
+	private static int noNeighbours = 15;
+	private List<List<Short>> neighbours;
 
 	public TSP() {
 		long deadline = System.currentTimeMillis();
@@ -16,10 +22,10 @@ public class TSP {
 			e.printStackTrace();
 		}
 
-		distances = calculateAllDistances();
-
-		Short[] route = new NearestNeighbour(distances).run();
-		route = new TwoOpt(distances).run(route, deadline + 1500);
+		calculateAllDistances();
+		createNearestNeighbours();
+		Short[] route = new NearestNeighbour(distances, neighbours).run();
+		route = new TwoOpt(distances, neighbours).run(route, deadline + 1500);
 
 		if (benchmark) {
 			System.out.println(calculateTotalDistance(route));
@@ -27,6 +33,27 @@ public class TSP {
 			for (int i = 0; i < route.length; i++) {
 				System.out.println(route[i]);
 			}
+		}
+	}
+
+	private void createNearestNeighbours() {
+		if (distances.length <= noNeighbours)
+			noNeighbours = distances.length - 1;
+
+		List<Short> rangeList = new ArrayList<Short>();
+		for (short i = 0; i < distances.length; i++) {
+			rangeList.add(i);
+		}
+		neighbours = new ArrayList<List<Short>>(distances.length);
+		for (int i = 0; i < distances.length; i++) {
+			List<Short> neighbourList = new ArrayList<Short>(rangeList);
+			final Integer[] comp = distances[i];
+			Collections.sort(neighbourList, new Comparator<Short>() {
+				public int compare(Short a, Short b) {
+					return comp[a].compareTo(comp[b]);
+				}
+			});
+			neighbours.add(new ArrayList<Short>(neighbourList.subList(0, noNeighbours)));
 		}
 	}
 
@@ -38,17 +65,17 @@ public class TSP {
 		return sum;
 	}
 
-	private int[][] calculateAllDistances() {
-		int[][] distances = new int[coordinates.length][];
-		for (short i = 0; i < coordinates.length; i++) {
-			distances[i] = new int[coordinates.length];
-			for (short j = 0; j < i; j++) {
+	private void calculateAllDistances() {
+		distances = new Integer[coordinates.length][];
+		for (int i = 0; i < coordinates.length; i++) {
+			distances[i] = new Integer[coordinates.length];
+			distances[i][i] = Integer.MAX_VALUE;
+			for (int j = 0; j < i; j++) {
 				int dist = calculateDistance(coordinates[i], coordinates[j]);
 				distances[i][j] = dist;
 				distances[j][i] = dist;
 			}
 		}
-		return distances;
 	}
 
 	private int calculateDistance(double[] i, double[] j) {
