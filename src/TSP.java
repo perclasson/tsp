@@ -1,14 +1,18 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class TSP {
 	private double[][] coordinates;
-	private int[][] distances;
+	private Integer[][] distances;
 	private static boolean benchmark;
+	private static int noNeighbours = 15;
+	private List<List<Short>> neighbours;
 
 	public TSP() {
 		long deadline = System.currentTimeMillis();
@@ -19,7 +23,8 @@ public class TSP {
 			e.printStackTrace();
 		}
 
-		distances = calculateEuclideanDistance();
+		calculateAllDistances();
+		createNearestNeighbours();
 		Short[] route = twoOpt(nearestNeighbourConstruct(), deadline + 1500);
 
 		if (benchmark) {
@@ -31,16 +36,39 @@ public class TSP {
 		}
 	}
 
+	private void createNearestNeighbours() {
+		if (distances.length <= noNeighbours)
+			noNeighbours = distances.length - 1;
+
+		List<Short> rangeList = new ArrayList<Short>();
+		for (short i = 0; i < distances.length; i++) {
+			rangeList.add(i);
+		}
+		neighbours = new ArrayList<List<Short>>(distances.length);
+		for (int i = 0; i < distances.length; i++) {
+			List<Short> neighbourList = new ArrayList<Short>(rangeList);
+			final Integer[] comp = distances[i];
+			Collections.sort(neighbourList, new Comparator<Short>() {
+				public int compare(Short a, Short b) {
+					return comp[a].compareTo(comp[b]);
+				}
+			});
+			neighbours.add(new ArrayList<Short>(neighbourList.subList(0, noNeighbours)));
+		}
+	}
+
 	private Short[] twoOpt(Short[] route, long deadline) {
 		boolean improved = true;
 		search: while (improved) {
 			improved = false;
-			for (int i = 1; i < route.length - 1; i++) {
-				for (int k = i + 1; k < route.length; k++) {
+			for (int i = 0; i < route.length; i++) {
+				for (Short k : neighbours.get(i)) {
 					if (System.currentTimeMillis() >= deadline)
 						break search;
-					if (isGain(route, i, k)) {
-						twoOptSwap(route, i, k + 1);
+					int a = Math.min(i, k);
+					int b = Math.max(i, k);
+					if (a != b && isGain(route, a, b)) {
+						twoOptSwap(route, a, b);
 						improved = true;
 						continue search;
 					}
@@ -71,9 +99,8 @@ public class TSP {
 
 	private void twoOptSwap(Short[] route, int i, int k) {
 		List<Short> routeList = Arrays.asList(route);
-		Collections.reverse(routeList.subList(i, k));
+		Collections.reverse(routeList.subList(i, k + 1));
 	}
-
 
 	private Short[] nearestNeighbourConstruct() {
 		Short[] newRoute = new Short[distances.length];
@@ -91,6 +118,13 @@ public class TSP {
 	}
 
 	private short findNearestNeighbour(int from, boolean[] visited) {
+		for (Short to : neighbours.get(from)) {
+			if (!visited[to]) {
+				visited[to] = true;
+				return to;
+			}
+		}
+
 		int minCost = Integer.MAX_VALUE;
 		short nearest = 0;
 		for (short to = 0; to < distances.length; to++) {
@@ -112,17 +146,17 @@ public class TSP {
 		return sum;
 	}
 
-	private int[][] calculateEuclideanDistance() {
-		int[][] euclideanDistances = new int[coordinates.length][];
+	private void calculateAllDistances() {
+		distances = new Integer[coordinates.length][];
 		for (int i = 0; i < coordinates.length; i++) {
-			euclideanDistances[i] = new int[coordinates.length];
+			distances[i] = new Integer[coordinates.length];
+			distances[i][i] = Integer.MAX_VALUE;
 			for (int j = 0; j < i; j++) {
 				int dist = euclidianDistance(coordinates[i], coordinates[j]);
-				euclideanDistances[i][j] = dist;
-				euclideanDistances[j][i] = dist;
+				distances[i][j] = dist;
+				distances[j][i] = dist;
 			}
 		}
-		return euclideanDistances;
 	}
 
 	private int euclidianDistance(double[] i, double[] j) {
