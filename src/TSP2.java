@@ -22,7 +22,7 @@ public class TSP2 {
 		}
 
 		distances = calculateEuclideanDistance();
-		Short[] route = twoOptSearch(nearestNeighbourRoute(), deadline + 1800);
+		Short[] route = twoOpt(nearestNeighbourConstruct(), deadline + 1800);
 
 		if (benchmark) {
 			System.out.println(calculateTotalDistance(route));
@@ -33,16 +33,16 @@ public class TSP2 {
 		}
 	}
 
-	private Short[] twoOptSearch(Short[] existingRoute, long deadline) {
+	private Short[] twoOpt(Short[] route, long deadline) {
 		boolean improved = true;
 		search: while (improved) {
 			improved = false;
-			for (int i = 1; i < existingRoute.length - 1; i++) {
-				for (int k = i + 1; k < existingRoute.length; k++) {
+			for (int i = 1; i < route.length - 1; i++) {
+				for (int k = i + 1; k < route.length; k++) {
 					if (System.currentTimeMillis() >= deadline)
 						break search;
-					if (isGain(existingRoute, i, k)) {
-						twoOptSwap(existingRoute, i, k + 1);
+					if (isImprovement(route, i, k)) {
+						twoOptSwap(route, i, k + 1);
 						improved = true;
 						continue search;
 					}
@@ -50,23 +50,23 @@ public class TSP2 {
 			}
 			break;
 		}
-		return existingRoute;
+		return route;
 	}
 
-	private boolean isGain(Short[] existingRoute, int i, int k) {
+	private boolean isImprovement(Short[] route, int i, int k) {
 		int a = i - 1;
 		int b = i;
 		int c = k;
 		int d = k + 1;
 
 		if (b == 0)
-			a = existingRoute.length - 1;
+			a = route.length - 1;
 
-		if (d == existingRoute.length)
+		if (d == route.length)
 			d = 0;
 
-		int prevCost = getDistance(existingRoute[a], existingRoute[b]) + getDistance(existingRoute[c], existingRoute[d]);
-		int newCost = getDistance(existingRoute[a], existingRoute[c]) + getDistance(existingRoute[b], existingRoute[d]);
+		int prevCost = getDistance(route[a], route[b]) + getDistance(route[c], route[d]);
+		int newCost = getDistance(route[a], route[c]) + getDistance(route[b], route[d]);
 
 		return (prevCost - newCost) > 0;
 	}
@@ -76,7 +76,7 @@ public class TSP2 {
 		Collections.reverse(routeList.subList(i, k));
 	}
 
-	private Short[] nearestNeighbourRoute() {
+	private Short[] nearestNeighbourConstruct() {
 		Short[] newRoute = new Short[distances.length];
 		boolean[] visited = new boolean[distances.length];
 
