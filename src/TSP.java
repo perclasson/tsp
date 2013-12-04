@@ -1,9 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class TSP {
 	private double[][] coordinates;
@@ -19,8 +16,10 @@ public class TSP {
 			e.printStackTrace();
 		}
 
-		distances = calculateEuclideanDistance();
-		Short[] route = twoOpt(nearestNeighbourConstruct(), deadline + 1500);
+		distances = calculateAllDistances();
+
+		Short[] route = new NearestNeighbour(distances).run();
+		route = new TwoOpt(distances).run(route, deadline + 1500);
 
 		if (benchmark) {
 			System.out.println(calculateTotalDistance(route));
@@ -31,85 +30,6 @@ public class TSP {
 		}
 	}
 
-	private Short[] twoOpt(Short[] route, long deadline) {
-		boolean improved = true;
-		search: while (improved) {
-			improved = false;
-			for (int i = 1; i < route.length - 1; i++) {
-				for (int k = i + 1; k < route.length; k++) {
-					if (System.currentTimeMillis() >= deadline)
-						break search;
-					if (isGain(route, i, k)) {
-						twoOptSwap(route, i, k + 1);
-						improved = true;
-						continue search;
-					}
-				}
-			}
-			break;
-		}
-		return route;
-	}
-
-	private boolean isGain(Short[] existingRoute, int i, int k) {
-		int a = i - 1;
-		int b = i;
-		int c = k;
-		int d = k + 1;
-
-		if (b == 0)
-			a = existingRoute.length - 1;
-
-		if (d == existingRoute.length)
-			d = 0;
-
-		int prevCost = distances[existingRoute[a]][existingRoute[b]] + distances[existingRoute[c]][existingRoute[d]];
-		int newCost = distances[existingRoute[a]][existingRoute[c]] + distances[existingRoute[b]][existingRoute[d]];
-
-		return (prevCost - newCost) > 0;
-	}
-
-	private void twoOptSwap(Short[] route, int i, int k) {
-		List<Short> routeList = Arrays.asList(route);
-		Collections.reverse(routeList.subList(i, k));
-	}
-
-	private Short[] nearestNeighbourConstruct() {
-		Short[] newRoute = new Short[distances.length];
-		boolean[] visited = new boolean[distances.length];
-
-		int firstVertex = 0;
-		newRoute[0] = (short) firstVertex;
-		visited[firstVertex] = true;
-
-		for (int i = 0; i < newRoute.length - 1; i++) {
-			newRoute[i + 1] = findNearestNeighbour(newRoute[i], visited);
-		}
-
-		return newRoute;
-	}
-
-	private Short[] greedyConstruct() {
-		Short[] route = new Short[distances.length];
-		boolean[] visited = new boolean[distances.length];
-
-		return null;
-	}
-
-	private short findNearestNeighbour(int from, boolean[] visited) {
-		int minCost = Integer.MAX_VALUE;
-		short nearest = 0;
-		for (short to = 0; to < distances.length; to++) {
-			int cost = distances[from][to];
-			if (!visited[to] && cost < minCost) {
-				minCost = cost;
-				nearest = to;
-			}
-		}
-		visited[nearest] = true;
-		return nearest;
-	}
-
 	private int calculateTotalDistance(Short[] route) {
 		int sum = distances[route[route.length - 1]][route[0]];
 		for (int i = 0; i < route.length - 1; i++) {
@@ -118,20 +38,20 @@ public class TSP {
 		return sum;
 	}
 
-	private int[][] calculateEuclideanDistance() {
-		int[][] euclideanDistances = new int[coordinates.length][];
-		for (int i = 0; i < coordinates.length; i++) {
-			euclideanDistances[i] = new int[coordinates.length];
-			for (int j = 0; j < i; j++) {
-				int dist = euclidianDistance(coordinates[i], coordinates[j]);
-				euclideanDistances[i][j] = dist;
-				euclideanDistances[j][i] = dist;
+	private int[][] calculateAllDistances() {
+		int[][] distances = new int[coordinates.length][];
+		for (short i = 0; i < coordinates.length; i++) {
+			distances[i] = new int[coordinates.length];
+			for (short j = 0; j < i; j++) {
+				int dist = calculateDistance(coordinates[i], coordinates[j]);
+				distances[i][j] = dist;
+				distances[j][i] = dist;
 			}
 		}
-		return euclideanDistances;
+		return distances;
 	}
 
-	private int euclidianDistance(double[] i, double[] j) {
+	private int calculateDistance(double[] i, double[] j) {
 		return (int) Math.round(Math.sqrt(Math.pow(i[0] - j[0], 2) + Math.pow(i[1] - j[1], 2)));
 	}
 
