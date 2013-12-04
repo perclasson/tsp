@@ -1,11 +1,9 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class TSP2 {
 	private double[][] coordinates;
@@ -76,19 +74,26 @@ public class TSP2 {
 		Collections.reverse(routeList.subList(i, k));
 	}
 
+	private Short[] greedyConstruct() {
+		Short[] route = new Short[distances.length];
+		boolean[] visited = new boolean[distances.length];
+
+		return null;
+	}
+
 	private Short[] nearestNeighbourConstruct() {
-		Short[] newRoute = new Short[distances.length];
+		Short[] route = new Short[distances.length];
 		boolean[] visited = new boolean[distances.length];
 
 		int firstVertex = 0;
-		newRoute[0] = (short) firstVertex;
+		route[0] = (short) firstVertex;
 		visited[firstVertex] = true;
 
-		for (int i = 0; i < newRoute.length - 1; i++) {
-			newRoute[i + 1] = findNearestNeighbour(newRoute[i], visited);
+		for (int i = 0; i < route.length - 1; i++) {
+			route[i + 1] = findNearestNeighbour(route[i], visited);
 		}
 
-		return newRoute;
+		return route;
 	}
 
 	private short findNearestNeighbour(int from, boolean[] visited) {
