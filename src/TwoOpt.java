@@ -7,7 +7,7 @@ public class TwoOpt {
 
 	private Integer[][] distances;
 	private List<List<Short>> neighbours;
-
+	
 	public TwoOpt(Integer[][] distances, List<List<Short>> neighbours) {
 		this.distances = distances;
 		this.neighbours = neighbours;
@@ -19,6 +19,8 @@ public class TwoOpt {
 		search: while (improved) {
 			improved = false;
 			for (int i = 1; i < route.length - 1; i++) {
+				if (System.currentTimeMillis() >= deadline)
+					break search;
 				if (dontLook[i])
 					continue;
 				boolean improveFlag = false;

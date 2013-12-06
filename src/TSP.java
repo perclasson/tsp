@@ -7,14 +7,16 @@ import java.util.Comparator;
 import java.util.List;
 
 public class TSP {
-	private double[][] coordinates;
-	private Integer[][] distances;
 	private static boolean benchmark;
 	private static int noNeighbours = 15;
+	private static int NO_RUNS = 50;
+	private static int TIME_UNTIL_EXIT = 1800;
+	private double[][] coordinates;
+	private Integer[][] distances;
 	private List<List<Short>> neighbours;
 
 	public TSP() {
-		long deadline = System.currentTimeMillis();
+		long deadline = System.currentTimeMillis() + TIME_UNTIL_EXIT;
 
 		try {
 			coordinates = readCoordinates();
@@ -23,8 +25,24 @@ public class TSP {
 		}
 
 		calculateAllDistances();
-		Short[] route = new NearestNeighbour(distances, neighbours).run();
-		route = new TwoOpt(distances, neighbours).run(route, deadline + 1500);
+		Short[] route = new NearestNeighbour(distances, neighbours, 0).run();
+		route = new TwoOpt(distances, neighbours).run(route, deadline);
+		if (System.currentTimeMillis() < (deadline - 600))
+			route = new TwoOpt(distances, neighbours).run(route, deadline);
+		int minDistance = calculateTotalDistance(route);
+
+		for (int i = 0; i < NO_RUNS; i++) {
+			if (System.currentTimeMillis() >= (deadline - 600))
+				break;
+			Short[] newRoute = new NearestNeighbour(distances, neighbours, 35).run();
+			newRoute = new TwoOpt(distances, neighbours).run(newRoute, deadline);
+			newRoute = new TwoOpt(distances, neighbours).run(newRoute, deadline);
+			int newDistance = calculateTotalDistance(newRoute);
+			if (newDistance < minDistance) {
+				minDistance = newDistance;
+				route = newRoute;
+			}
+		}
 
 		if (benchmark) {
 			System.out.println(calculateTotalDistance(route));
